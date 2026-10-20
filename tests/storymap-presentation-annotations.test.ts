@@ -40,10 +40,7 @@ describe("presentation annotations", () => {
     assert.equal(geometry?.type, "Polygon");
     if (geometry?.type !== "Polygon") throw new Error("expected Polygon");
     assert.deepEqual(geometry.coordinates[0][3], [117, 39]);
-    assert.equal(
-      presentationGeometry("area", [...draft, [117, 39]])?.type,
-      "Polygon",
-    );
+    assert.equal(presentationGeometry("area", [...draft, [117, 39]])?.type, "Polygon");
     geometry.coordinates[0][0][0] = 118;
     assert.equal(draft[0][0], 117);
   });
@@ -67,10 +64,7 @@ describe("presentation annotations", () => {
     const collection = presentationAnnotationsCollection([line]);
     collection.features[0].properties.label = "Changed in project";
     assert.equal(line.properties.label, "Equator");
-    assert.equal(
-      collection.features[0].properties.distanceMeters,
-      line.properties.distanceMeters,
-    );
+    assert.equal(collection.features[0].properties.distanceMeters, line.properties.distanceMeters);
   });
 
   it("measures areas in square units and keeps ordinary annotations unmeasured", () => {
@@ -89,13 +83,7 @@ describe("presentation annotations", () => {
     assert.ok(area);
     assert.ok(area.properties.areaSquareMeters! > 1_000_000);
     assert.match(presentationMeasurementLabel(area, "en"), /km²$/);
-    const point = createPresentationAnnotation(
-      "text",
-      [[117, 39]],
-      "b",
-      "Site",
-      "point-1",
-    );
+    const point = createPresentationAnnotation("text", [[117, 39]], "b", "Site", "point-1");
     assert.ok(point);
     assert.equal(presentationMeasurementLabel(point, "en"), "");
     assert.equal(point.properties.areaSquareMeters, undefined);

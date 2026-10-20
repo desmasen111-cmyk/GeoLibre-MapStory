@@ -1,19 +1,7 @@
-import type {
-  Feature,
-  FeatureCollection,
-  LineString,
-  Point,
-  Polygon,
-} from "geojson";
+import type { Feature, FeatureCollection, LineString, Point, Polygon } from "geojson";
 import { measureArea, measureLength } from "./geometry-measure";
 
-export type PresentationTool =
-  | "point"
-  | "text"
-  | "line"
-  | "polygon"
-  | "distance"
-  | "area";
+export type PresentationTool = "point" | "text" | "line" | "polygon" | "distance" | "area";
 export type PresentationCoordinate = [number, number];
 export type PresentationGeometry = Point | LineString | Polygon;
 export interface PresentationAnnotationProperties {
@@ -42,22 +30,15 @@ export function presentationGeometry(
 ): PresentationGeometry | null {
   if (
     coordinates.some(
-      ([lng, lat]) =>
-        !Number.isFinite(lng) || !Number.isFinite(lat) || Math.abs(lat) > 90,
+      ([lng, lat]) => !Number.isFinite(lng) || !Number.isFinite(lat) || Math.abs(lat) > 90,
     )
   )
     return null;
-  const distinct = new Set(
-    coordinates.map((coordinate) => coordinate.join(",")),
-  ).size;
+  const distinct = new Set(coordinates.map((coordinate) => coordinate.join(","))).size;
   if (distinct < presentationToolMinimum(tool)) return null;
-  const points = coordinates.map(
-    ([lng, lat]): PresentationCoordinate => [lng, lat],
-  );
-  if (tool === "point" || tool === "text")
-    return { type: "Point", coordinates: points[0] };
-  if (tool === "line" || tool === "distance")
-    return { type: "LineString", coordinates: points };
+  const points = coordinates.map(([lng, lat]): PresentationCoordinate => [lng, lat]);
+  if (tool === "point" || tool === "text") return { type: "Point", coordinates: points[0] };
+  if (tool === "line" || tool === "distance") return { type: "LineString", coordinates: points };
   const first = points[0];
   const last = points[points.length - 1];
   if (first[0] !== last[0] || first[1] !== last[1]) points.push([...first]);
@@ -96,17 +77,12 @@ export function presentationMeasurementLabel(
   annotation: PresentationAnnotation,
   locale?: string,
 ): string {
-  const format = (value: number) =>
-    value.toLocaleString(locale, { maximumFractionDigits: 2 });
+  const format = (value: number) => value.toLocaleString(locale, { maximumFractionDigits: 2 });
   const area = annotation.properties.areaSquareMeters;
   if (area !== undefined)
-    return area >= 1_000_000
-      ? `${format(area / 1_000_000)} km²`
-      : `${format(area)} m²`;
+    return area >= 1_000_000 ? `${format(area / 1_000_000)} km²` : `${format(area)} m²`;
   const distance = annotation.properties.distanceMeters;
   if (distance !== undefined)
-    return distance >= 1000
-      ? `${format(distance / 1000)} km`
-      : `${format(distance)} m`;
+    return distance >= 1000 ? `${format(distance / 1000)} km` : `${format(distance)} m`;
   return "";
 }

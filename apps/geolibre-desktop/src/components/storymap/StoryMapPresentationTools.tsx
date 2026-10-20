@@ -101,28 +101,21 @@ export function StoryMapPresentationTools({
   const { t, i18n } = useTranslation();
   const geocoding = useAppStore((state) => state.preferences.geocoding);
   const ownedSessionRef = useRef<PresentationToolsSession | null>(null);
-  if (!ownedSessionRef.current)
-    ownedSessionRef.current = createPresentationToolsSession();
+  if (!ownedSessionRef.current) ownedSessionRef.current = createPresentationToolsSession();
   const presentationSession = session ?? ownedSessionRef.current;
   const [expanded, setExpanded] = useState(
     () => presentationSession.expanded || presentationSession.tool !== null,
   );
-  const [tool, setTool] = useState<PresentationTool | null>(
-    () => presentationSession.tool,
-  );
-  const [draft, setDraft] = useState<PresentationCoordinate[]>(
-    () => presentationSession.draft,
-  );
+  const [tool, setTool] = useState<PresentationTool | null>(() => presentationSession.tool);
+  const [draft, setDraft] = useState<PresentationCoordinate[]>(() => presentationSession.draft);
   const [label, setLabel] = useState(() => presentationSession.label);
-  const [annotations, setAnnotations] = useState<
-    Record<string, PresentationAnnotation[]>
-  >(() => presentationSession.annotations);
+  const [annotations, setAnnotations] = useState<Record<string, PresentationAnnotation[]>>(
+    () => presentationSession.annotations,
+  );
   const [query, setQuery] = useState("");
   const [matches, setMatches] = useState<GeocodeMatch[]>([]);
   const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState<
-    "noMatches" | "searchError" | null
-  >(null);
+  const [searchError, setSearchError] = useState<"noMatches" | "searchError" | null>(null);
   const [searchLocation, setSearchLocation] = useState<{
     chapterId: string;
     coordinate: PresentationCoordinate;
@@ -130,9 +123,7 @@ export function StoryMapPresentationTools({
   const [saved, setSaved] = useState(false);
   const [, invalidateProjection] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
-  const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(
-    null,
-  );
+  const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const draftCallbackRef = useRef(onDraftChange);
   draftCallbackRef.current = onDraftChange;
   const surface = engine.getRenderSurface();
@@ -170,8 +161,7 @@ export function StoryMapPresentationTools({
     const stop = engine.onCameraMove(update);
     const idle = engine.onCameraIdle(update);
     const container = engine.getRenderSurface()?.getContainer();
-    const observer =
-      typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
     if (container) observer?.observe(container);
     return () => {
       stop();
@@ -292,9 +282,7 @@ export function StoryMapPresentationTools({
   const project = (coordinate: PresentationCoordinate) => {
     try {
       const point = surface?.project(coordinate);
-      return point && Number.isFinite(point.x) && Number.isFinite(point.y)
-        ? point
-        : null;
+      return point && Number.isFinite(point.x) && Number.isFinite(point.y) ? point : null;
     } catch {
       return null;
     }
@@ -316,24 +304,12 @@ export function StoryMapPresentationTools({
     const points = projected as { x: number; y: number }[];
     const anchor = points[geometry.type === "Polygon" ? 0 : points.length - 1];
     if (!anchor) return null;
-    const measurementLabel = presentationMeasurementLabel(
-      annotation,
-      i18n.language,
-    );
-    const caption = [annotation.properties.label, measurementLabel]
-      .filter(Boolean)
-      .join(" · ");
+    const measurementLabel = presentationMeasurementLabel(annotation, i18n.language);
+    const caption = [annotation.properties.label, measurementLabel].filter(Boolean).join(" · ");
     return (
       <g key={annotation.id}>
         {geometry.type === "Point" ? (
-          <circle
-            cx={anchor.x}
-            cy={anchor.y}
-            r={6}
-            fill="#ef4444"
-            stroke="white"
-            strokeWidth={2}
-          />
+          <circle cx={anchor.x} cy={anchor.y} r={6} fill="#ef4444" stroke="white" strokeWidth={2} />
         ) : (
           <polyline
             points={points.map((point) => `${point.x},${point.y}`).join(" ")}
@@ -363,9 +339,7 @@ export function StoryMapPresentationTools({
 
   const projectedDraft = draft.map(project);
   const searchPoint =
-    searchLocation?.chapterId === chapterId
-      ? project(searchLocation.coordinate)
-      : null;
+    searchLocation?.chapterId === chapterId ? project(searchLocation.coordinate) : null;
   return (
     <>
       {/* Capture drawing gestures only while armed. Existing Identify and
@@ -430,9 +404,7 @@ export function StoryMapPresentationTools({
           <g>
             {!draftAnnotation && (
               <polyline
-                points={projectedDraft
-                  .map((point) => `${point!.x},${point!.y}`)
-                  .join(" ")}
+                points={projectedDraft.map((point) => `${point!.x},${point!.y}`).join(" ")}
                 fill="none"
                 stroke="#ef4444"
                 strokeWidth={3}
@@ -630,12 +602,7 @@ export function StoryMapPresentationTools({
                   >
                     <Undo2 className="h-3.5 w-3.5" />
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="gap-1"
-                    onClick={cancelDrawing}
-                  >
+                  <Button size="sm" variant="ghost" className="gap-1" onClick={cancelDrawing}>
                     <X className="h-3.5 w-3.5" />
                     {t("storymap.presentationTools.cancel")}
                   </Button>
@@ -681,15 +648,10 @@ export function StoryMapPresentationTools({
             </div>
             <p
               role={saved ? "status" : undefined}
-              className={cn(
-                "text-[11px]",
-                saved ? "text-primary" : "text-muted-foreground",
-              )}
+              className={cn("text-[11px]", saved ? "text-primary" : "text-muted-foreground")}
             >
               {t(
-                saved
-                  ? "storymap.presentationTools.saved"
-                  : "storymap.presentationTools.temporary",
+                saved ? "storymap.presentationTools.saved" : "storymap.presentationTools.temporary",
               )}
             </p>
           </section>

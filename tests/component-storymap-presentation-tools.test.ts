@@ -6,9 +6,7 @@ import { createPortal } from "react-dom";
 import type { MapEngine } from "@geolibre/map";
 
 const { StoryMapPresentationTools, createPresentationToolsSession } =
-  await import(
-    "../apps/geolibre-desktop/src/components/storymap/StoryMapPresentationTools"
-  );
+  await import("../apps/geolibre-desktop/src/components/storymap/StoryMapPresentationTools");
 
 /** Engine-neutral harness: no MapLibre instance and no business layer writes. */
 function fakeEngine() {
@@ -74,10 +72,9 @@ describe("storymap presentation tools", () => {
     fireEvent.click(screen.getByRole("button", { name: "Place a marker" }));
     first.click([117, 39]);
     fireEvent.click(screen.getByRole("button", { name: "Draw a line" }));
-    fireEvent.change(
-      screen.getByRole("textbox", { name: "Annotation text (optional)" }),
-      { target: { value: "Unfinished route" } },
-    );
+    fireEvent.change(screen.getByRole("textbox", { name: "Annotation text (optional)" }), {
+      target: { value: "Unfinished route" },
+    });
     first.click([117, 39]);
     assert.equal(session.annotations.a.length, 1);
     assert.equal(session.draft.length, 1);
@@ -93,15 +90,10 @@ describe("storymap presentation tools", () => {
       "Unfinished route",
     );
     assert.equal(
-      (screen.getByRole("button", { name: "Finish" }) as HTMLButtonElement)
-        .disabled,
+      (screen.getByRole("button", { name: "Finish" }) as HTMLButtonElement).disabled,
       true,
     );
-    assert.equal(
-      screen.getByTestId("storymap-annotations").querySelectorAll("circle")
-        .length,
-      2,
-    );
+    assert.equal(screen.getByTestId("storymap-annotations").querySelectorAll("circle").length, 2);
     second.click([118, 39]);
     fireEvent.click(screen.getByRole("button", { name: "Finish" }));
     assert.equal(draftStates.at(-1), false);
@@ -123,40 +115,20 @@ describe("storymap presentation tools", () => {
       onInteract: () => {},
       onDraftChange: (value: boolean) => draftStates.push(value),
     };
-    const view = render(
-      createElement(StoryMapPresentationTools, { ...props, chapterId: "a" }),
-    );
+    const view = render(createElement(StoryMapPresentationTools, { ...props, chapterId: "a" }));
     const initialLayers = useAppStore.getState().layers.length;
     fireEvent.click(screen.getByRole("button", { name: "Presentation tools" }));
     fireEvent.click(screen.getByRole("button", { name: "Place a marker" }));
     assert.equal(draftStates.at(-1), true);
     fake.click([117, 39]);
     assert.equal(draftStates.at(-1), false);
-    assert.equal(
-      screen.getByTestId("storymap-annotations").querySelectorAll("circle")
-        .length,
-      1,
-    );
+    assert.equal(screen.getByTestId("storymap-annotations").querySelectorAll("circle").length, 1);
     assert.equal(useAppStore.getState().layers.length, initialLayers);
-    view.rerender(
-      createElement(StoryMapPresentationTools, { ...props, chapterId: "b" }),
-    );
-    assert.equal(
-      screen.getByTestId("storymap-annotations").querySelectorAll("circle")
-        .length,
-      0,
-    );
-    view.rerender(
-      createElement(StoryMapPresentationTools, { ...props, chapterId: "a" }),
-    );
-    assert.equal(
-      screen.getByTestId("storymap-annotations").querySelectorAll("circle")
-        .length,
-      1,
-    );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Save as result layer" }),
-    );
+    view.rerender(createElement(StoryMapPresentationTools, { ...props, chapterId: "b" }));
+    assert.equal(screen.getByTestId("storymap-annotations").querySelectorAll("circle").length, 0);
+    view.rerender(createElement(StoryMapPresentationTools, { ...props, chapterId: "a" }));
+    assert.equal(screen.getByTestId("storymap-annotations").querySelectorAll("circle").length, 1);
+    fireEvent.click(screen.getByRole("button", { name: "Save as result layer" }));
     assert.equal(useAppStore.getState().layers.length, initialLayers + 1);
   });
 
@@ -175,15 +147,11 @@ describe("storymap presentation tools", () => {
     fireEvent.click(screen.getByRole("button", { name: "Measure distance" }));
     fake.click([0, 0]);
     assert.equal(
-      (screen.getByRole("button", { name: "Finish" }) as HTMLButtonElement)
-        .disabled,
+      (screen.getByRole("button", { name: "Finish" }) as HTMLButtonElement).disabled,
       true,
     );
     fake.click([1, 0]);
-    assert.match(
-      screen.getByTestId("storymap-annotations").textContent ?? "",
-      /111\.\d+ km/,
-    );
+    assert.match(screen.getByTestId("storymap-annotations").textContent ?? "", /111\.\d+ km/);
     assert.equal(drafts.at(-1), true);
     fireEvent.click(screen.getByRole("button", { name: "Finish" }));
     assert.equal(drafts.at(-1), false);
@@ -192,11 +160,7 @@ describe("storymap presentation tools", () => {
     fake.click([117, 39]);
     fireEvent.click(screen.getByRole("button", { name: "Cancel drawing" }));
     assert.equal(drafts.at(-1), false);
-    assert.equal(
-      screen.getByTestId("storymap-annotations").querySelectorAll("polyline")
-        .length,
-      1,
-    );
+    assert.equal(screen.getByTestId("storymap-annotations").querySelectorAll("polyline").length, 1);
     view.unmount();
     assert.equal(screen.queryByTestId("storymap-drawing-surface"), null);
   });

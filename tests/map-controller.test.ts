@@ -2154,7 +2154,9 @@ describe("MapController story camera handoff", () => {
 
   it("allows the arrival callback to pause before rotation starts", () => {
     const { controller, events } = setup();
-    controller.applyStoryChapterCamera(location, "jumpTo", true, () => controller.stopStoryCamera());
+    controller.applyStoryChapterCamera(location, "jumpTo", true, () =>
+      controller.stopStoryCamera(),
+    );
     assert.deepEqual(events, ["stop"]);
   });
 
@@ -2288,7 +2290,11 @@ describe("MapController story-map layer helpers", () => {
     controller.restoreLayerStyles();
     assert.equal(circlePaint()["circle-opacity"], initialOpacity);
     controller.syncLayers([projectLayer, savedAnnotation]);
-    assert.equal(circlePaint()["circle-opacity"], initialOpacity, "cleared overrides must not return on sync");
+    assert.equal(
+      circlePaint()["circle-opacity"],
+      initialOpacity,
+      "cleared overrides must not return on sync",
+    );
   });
 
   it("does not apply a removed layer's old story fade when its id is reused", () => {

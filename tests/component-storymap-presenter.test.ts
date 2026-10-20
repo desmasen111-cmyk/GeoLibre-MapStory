@@ -2,15 +2,11 @@ import { act, fireEvent, render, screen, useAppStore } from "./helpers/dom";
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import { createElement } from "react";
-import {
-  createSampleStoryMap,
-  type StoryChapterLocation,
-} from "@geolibre/core";
+import { createSampleStoryMap, type StoryChapterLocation } from "@geolibre/core";
 import type { MapEngine } from "@geolibre/map";
 
-const { StoryMapPresenter } = await import(
-  "../apps/geolibre-desktop/src/components/storymap/StoryMapPresenter"
-);
+const { StoryMapPresenter } =
+  await import("../apps/geolibre-desktop/src/components/storymap/StoryMapPresenter");
 
 const containers: HTMLElement[] = [];
 afterEach(() => {
@@ -70,8 +66,7 @@ function startStory() {
     ...chapter,
     id: `chapter-${index + 1}`,
     title: ["Alpha", "Beta", "Gamma"][index],
-    description:
-      "<p>Long explanation: scrolling this card must not change chapters.</p>",
+    description: "<p>Long explanation: scrolling this card must not change chapters.</p>",
     durationSeconds: 60,
     onChapterEnter: [],
     onChapterExit: [],
@@ -121,10 +116,9 @@ describe("StoryMapPresenter lifecycle and input", () => {
     place(117, 39);
     fireEvent.click(screen.getByRole("button", { name: "Draw a line" }));
     place(117.1, 39);
-    fireEvent.change(
-      screen.getByRole("textbox", { name: "Annotation text (optional)" }),
-      { target: { value: "Explain this route" } },
-    );
+    fireEvent.change(screen.getByRole("textbox", { name: "Annotation text (optional)" }), {
+      target: { value: "Explain this route" },
+    });
     mapControllerRef.current = second.engine;
     view.rerender(
       createElement(StoryMapPresenter, {
@@ -132,11 +126,7 @@ describe("StoryMapPresenter lifecycle and input", () => {
         mapReadyGeneration: 2,
       }),
     );
-    assert.equal(
-      screen.getByTestId("storymap-annotations").querySelectorAll("circle")
-        .length,
-      2,
-    );
+    assert.equal(screen.getByTestId("storymap-annotations").querySelectorAll("circle").length, 2);
     assert.equal(
       (
         screen.getByRole("button", {
@@ -167,11 +157,7 @@ describe("StoryMapPresenter lifecycle and input", () => {
     act(() => {
       useAppStore.getState().setStorymapPresenting(true);
     });
-    assert.equal(
-      screen.getByTestId("storymap-annotations").querySelectorAll("circle")
-        .length,
-      0,
-    );
+    assert.equal(screen.getByTestId("storymap-annotations").querySelectorAll("circle").length, 0);
     assert.equal(screen.queryByTestId("storymap-drawing-surface"), null);
     assert.match(status(), /Chapter 1 \/ 3/);
   });
@@ -186,12 +172,8 @@ describe("StoryMapPresenter lifecycle and input", () => {
         mapReadyGeneration: 1,
       }),
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Next chapter" }),
-    );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Autoplay next chapter" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
+    fireEvent.click(screen.getByRole("button", { name: "Autoplay next chapter" }));
     assert.match(status(), /Chapter 3 \/ 3.*Next in/);
     const callsBefore = fake.calls.cameras.length;
     const stopsBefore = fake.calls.stops;
@@ -218,12 +200,8 @@ describe("StoryMapPresenter lifecycle and input", () => {
         mapReadyGeneration: 1,
       }),
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Next chapter" }),
-    );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Autoplay next chapter" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
+    fireEvent.click(screen.getByRole("button", { name: "Autoplay next chapter" }));
     assert.match(status(), /Chapter 3 \/ 3.*Next in/);
     mapControllerRef.current = second.engine;
     view.rerender(
@@ -232,19 +210,11 @@ describe("StoryMapPresenter lifecycle and input", () => {
         mapReadyGeneration: 2,
       }),
     );
-    assert.deepEqual(
-      second.calls.cameras.at(-1)?.center,
-      story.chapters[2].location.center,
-    );
+    assert.deepEqual(second.calls.cameras.at(-1)?.center, story.chapters[2].location.center);
     assert.equal(first.calls.restores, 1);
     assert.match(status(), /Chapter 3 \/ 3.*Paused for discussion/);
-    assert.equal(
-      first.container.querySelector('[data-testid="story-presentation"]'),
-      null,
-    );
-    assert.ok(
-      second.container.querySelector('[data-testid="story-presentation"]'),
-    );
+    assert.equal(first.container.querySelector('[data-testid="story-presentation"]'), null);
+    assert.ok(second.container.querySelector('[data-testid="story-presentation"]'));
   });
 
   it("blocks buttons, navigation keys and exit until an armed drawing is cancelled", () => {
@@ -258,15 +228,9 @@ describe("StoryMapPresenter lifecycle and input", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Presentation tools" }));
     fireEvent.click(screen.getByRole("button", { name: "Draw a line" }));
-    for (const name of [
-      "Next chapter",
-      "Previous chapter",
-      "Return to chapter view",
-      "Exit",
-    ]) {
+    for (const name of ["Next chapter", "Previous chapter", "Return to chapter view", "Exit"]) {
       assert.equal(
-        (screen.getByRole("button", { name }) as HTMLButtonElement)
-          .disabled,
+        (screen.getByRole("button", { name }) as HTMLButtonElement).disabled,
         true,
         `${name} must be disabled`,
       );
@@ -275,16 +239,12 @@ describe("StoryMapPresenter lifecycle and input", () => {
     fireEvent.keyDown(document.body, { key: "PageDown" });
     fireEvent.keyDown(document.body, { key: "Escape" });
     fireEvent.keyDown(document.body, { key: " ", code: "Space" });
-    fireEvent.click(
-      screen.getByRole("button", { name: "Next chapter" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
     assert.equal(fake.calls.cameras.length, calls);
     assert.equal(useAppStore.getState().ui.storymapPresenting, true);
     assert.match(status(), /Chapter 1 \/ 3/);
     fireEvent.click(screen.getByRole("button", { name: "Cancel drawing" }));
-    fireEvent.click(
-      screen.getByRole("button", { name: "Next chapter" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
     assert.match(status(), /Chapter 2 \/ 3.*Paused for discussion/);
     fireEvent.click(screen.getByRole("button", { name: "Exit" }));
     assert.equal(useAppStore.getState().ui.storymapPresenting, false);
@@ -309,9 +269,7 @@ describe("StoryMapPresenter lifecycle and input", () => {
     fireEvent.pointerDown(fake.canvas, { button: 0, pointerId: 1 });
     assert.ok(fake.calls.stops > before);
     assert.match(status(), /Chapter 1 \/ 3.*Paused for discussion/);
-    fireEvent.click(
-      screen.getByRole("button", { name: "Autoplay next chapter" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Autoplay next chapter" }));
     assert.match(status(), /Chapter 2 \/ 3.*Next in/);
     fireEvent.wheel(fake.canvas, { deltaY: 200 });
     assert.match(status(), /Chapter 2 \/ 3.*Paused for discussion/);
@@ -336,9 +294,7 @@ describe("StoryMapPresenter lifecycle and input", () => {
     assert.match(status(), /Chapter 1 \/ 3.*Next in/);
     fireEvent.focusIn(search);
     assert.match(status(), /Chapter 1 \/ 3.*Paused for discussion/);
-    fireEvent.click(
-      screen.getByRole("button", { name: "Autoplay next chapter" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Autoplay next chapter" }));
     assert.match(status(), /Chapter 2 \/ 3.*Next in/);
     fireEvent.pointerDown(button, { button: 0, pointerId: 1 });
     assert.match(status(), /Chapter 2 \/ 3.*Paused for discussion/);
