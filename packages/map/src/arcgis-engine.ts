@@ -1119,10 +1119,14 @@ export class ArcgisEngine implements MapEngine {
     location: StoryChapterLocation,
     animation: StoryChapterAnimation = "flyTo",
     rotate = false,
+    onArrive?: () => void,
   ): void {
     this.stopCamera();
     const view = this.view;
-    if (!view) return;
+    if (!view) {
+      onArrive?.();
+      return;
+    }
     this.markStoryMove();
     const token = this.storyCameraToken;
     void view
@@ -1137,6 +1141,8 @@ export class ArcgisEngine implements MapEngine {
       .then(() => {
         // A later chapter (or any camera stop) superseded this move while it
         // flew; its rotation would otherwise orbit the wrong chapter.
+        if (!this.view || token !== this.storyCameraToken) return;
+        onArrive?.();
         if (rotate && this.view && token === this.storyCameraToken) this.rotate();
       })
       .catch(reportGoToFailure);
@@ -2774,6 +2780,9 @@ export class ArcgisEngine implements MapEngine {
     };
   }
   stopCamera(): void {
+    this.stopStoryCamera();
+  }
+  stopStoryCamera(): void {
     this.storyCameraToken++;
     // Stopping the animation settles an in-flight goTo where it is.
     (this.view?.animation as { stop?: () => void } | null | undefined)?.stop?.();

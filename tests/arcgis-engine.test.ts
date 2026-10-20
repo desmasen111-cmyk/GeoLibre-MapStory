@@ -542,6 +542,31 @@ describe("ArcgisEngine camera moves", () => {
       options: { duration: 30000, easing: "linear" },
     });
   });
+  it("reports arrival before rotating and allows a pause in that callback", async () => {
+    const { engine, goTo } = makeEngine();
+    let arrived = 0;
+    engine.applyStoryChapterCamera(chapterAt([1, 2], 5), "flyTo", true, () => {
+      arrived++;
+      engine.stopStoryCamera();
+    });
+    assert.equal(arrived, 0);
+    await Promise.resolve();
+    assert.equal(arrived, 1);
+    assert.equal(goTo.length, 1, "pause prevents the pending rotation");
+    engine.destroy();
+  });
+  it("cancels a paused or superseded chapter's pending arrival and rotation", async () => {
+    const { engine, goTo } = makeEngine();
+    let arrived = 0;
+    engine.restoreLayerStyles = () => assert.fail("pausing must not restore styles");
+    engine.applyStoryChapterCamera(chapterAt([1, 2], 5), "flyTo", true, () => arrived++);
+    engine.applyStoryChapterCamera(chapterAt([3, 4], 6), "flyTo", true, () => arrived++);
+    engine.stopStoryCamera();
+    await Promise.resolve();
+    assert.equal(arrived, 0);
+    assert.equal(goTo.length, 2);
+    engine.destroy();
+  });
   it("marks the settle that ends a story move as scripted", async () => {
     const { engine, fireWatchers, fireViewEvent } = makeEngine();
     const seen: (boolean | undefined)[] = [];

@@ -3,6 +3,10 @@ import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import {
   DEFAULT_STORY_MAP,
+  DEFAULT_STORY_CHAPTER_DURATION_SECONDS,
+  MIN_STORY_CHAPTER_DURATION_SECONDS,
+  MAX_STORY_CHAPTER_DURATION_SECONDS,
+  normalizeStoryChapterDurationSeconds,
   createSampleStoryMap,
   parseStoryMapCsv,
   parseStoryMapJson,
@@ -970,6 +974,28 @@ function ChapterCard({
               </Select>
             </Field>
           </div>
+
+          <Field label={t("storymap.field.durationSeconds")}>
+            <Input
+              type="number"
+              min={MIN_STORY_CHAPTER_DURATION_SECONDS}
+              max={MAX_STORY_CHAPTER_DURATION_SECONDS}
+              step="any"
+              className="max-w-40"
+              aria-label={t("storymap.field.durationSeconds")}
+              value={chapter.durationSeconds ?? ""}
+              placeholder={String(DEFAULT_STORY_CHAPTER_DURATION_SECONDS)}
+              onChange={(event) =>
+                onUpdate({
+                  durationSeconds:
+                    event.target.value === ""
+                      ? undefined
+                      : normalizeStoryChapterDurationSeconds(event.target.valueAsNumber),
+                })
+              }
+            />
+            <p className="text-xs text-muted-foreground">{t("storymap.field.durationHint")}</p>
+          </Field>
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
             <label className="flex items-center gap-2">
