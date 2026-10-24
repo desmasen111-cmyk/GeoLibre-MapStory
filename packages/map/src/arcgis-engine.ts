@@ -1145,7 +1145,15 @@ export class ArcgisEngine implements MapEngine {
         onArrive?.();
         if (rotate && this.view && token === this.storyCameraToken) this.rotate();
       })
-      .catch(reportGoToFailure);
+      .catch((error: unknown) => {
+        reportGoToFailure(error);
+        if (
+          this.view &&
+          token === this.storyCameraToken &&
+          !isAbortError(error as Parameters<typeof isAbortError>[0])
+        )
+          onArrive?.();
+      });
   }
   /**
    * One half turn at MapLibre's story pace (180° over 30 s), as the MapLibre

@@ -859,6 +859,7 @@ function ChapterCard({
   onPreview,
   onCompose,
 }: ChapterCardProps) {
+  const [durationDraft, setDurationDraft] = useState<string | null>(null);
   // A chapter without a pitch/bearing keeps the camera's; show those as 0.
   const { center, zoom, pitch = 0, bearing = 0 } = chapter.location;
   return (
@@ -983,16 +984,18 @@ function ChapterCard({
               step="any"
               className="max-w-40"
               aria-label={t("storymap.field.durationSeconds")}
-              value={chapter.durationSeconds ?? ""}
+              value={durationDraft ?? chapter.durationSeconds ?? ""}
               placeholder={String(DEFAULT_STORY_CHAPTER_DURATION_SECONDS)}
-              onChange={(event) =>
+              onChange={(event) => setDurationDraft(event.target.value)}
+              onBlur={(event) => {
                 onUpdate({
                   durationSeconds:
                     event.target.value === ""
                       ? undefined
                       : normalizeStoryChapterDurationSeconds(event.target.valueAsNumber),
-                })
-              }
+                });
+                setDurationDraft(null);
+              }}
             />
             <p className="text-xs text-muted-foreground">{t("storymap.field.durationHint")}</p>
           </Field>

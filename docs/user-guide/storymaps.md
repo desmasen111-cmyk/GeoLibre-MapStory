@@ -18,7 +18,7 @@ project.
 
 !!! tip "Try it instantly"
     When the story is empty, click **Load sample story** to populate a five-city
-    world tour. Hit **Present** and use **Autoplay** to see it in action, then edit or
+    world tour. Hit **Present** and use **Play automatically** to see it in action, then edit or
     replace the chapters with your own.
 
 ![The Story Map builder, with the story settings above and the chapter list below](https://assets.geolibre.app/images/geolibre-story-map.webp)

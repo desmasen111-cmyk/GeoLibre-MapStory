@@ -85,6 +85,21 @@ function status() {
 }
 
 describe("StoryMapPresenter lifecycle and input", () => {
+  it("waits for an engine during replacement instead of passing null to the tools", () => {
+    startStory();
+    const fake = fakeEngine();
+    const mapControllerRef: { current: MapEngine | null } = { current: fake.engine };
+    const view = render(
+      createElement(StoryMapPresenter, { mapControllerRef, mapReadyGeneration: 1 }),
+    );
+    assert.ok(screen.queryByTestId("story-presentation"));
+    mapControllerRef.current = null;
+    view.rerender(createElement(StoryMapPresenter, { mapControllerRef, mapReadyGeneration: 2 }));
+    mapControllerRef.current = fake.engine;
+    view.rerender(createElement(StoryMapPresenter, { mapControllerRef, mapReadyGeneration: 3 }));
+    assert.ok(screen.queryByRole("button", { name: "Presentation tools" }));
+  });
+
   it("preserves unfinished drawing and navigation guards across engines, then clears the session on exit", () => {
     startStory();
     const first = fakeEngine();

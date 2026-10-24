@@ -48,6 +48,28 @@ function fixture(durations = [2, 3, 1], synchronous = false) {
 }
 
 describe("interactive story presentation playback", () => {
+  it("stops manual flights without skipping the first chapter or losing replay", () => {
+    const f = fixture([1, 1], true);
+    f.playback.initialize();
+    const initial = f.playback.snapshot;
+    f.playback.pause();
+    assert.deepEqual(f.playback.snapshot, initial);
+    assert.equal(f.stops(), 1);
+    f.playback.play();
+    assert.equal(f.playback.snapshot.index, 0);
+    assert.equal(f.playback.snapshot.phase, "playing");
+    f.advance(2000);
+    const ended = f.playback.snapshot;
+    assert.equal(ended.phase, "ended");
+    const stops = f.stops();
+    f.playback.pause();
+    assert.deepEqual(f.playback.snapshot, ended);
+    assert.equal(f.stops(), stops + 1);
+    f.playback.play();
+    assert.equal(f.playback.snapshot.index, 0);
+    assert.equal(f.playback.snapshot.phase, "playing");
+  });
+
   it("opens paused and counts dwell only after camera arrival", () => {
     const f = fixture();
     f.playback.initialize();

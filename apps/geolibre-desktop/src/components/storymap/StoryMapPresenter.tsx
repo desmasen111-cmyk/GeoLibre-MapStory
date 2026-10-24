@@ -722,17 +722,19 @@ export function StoryMapPresenter({
         </nav>
       ) : null}
 
-      <div data-story-ui>
-        <StoryMapPresentationTools
-          engine={mapControllerRef.current!}
-          session={toolsSessionRef.current}
-          chapterId={steps[playback.index]?.key ?? ""}
-          chapterTitle={chapters[activeChapter]?.title}
-          disabled={slideActive}
-          onInteract={pause}
-          onDraftChange={onDraftChange}
-        />
-      </div>
+      {presentationEngine && (
+        <div data-story-ui>
+          <StoryMapPresentationTools
+            engine={presentationEngine}
+            session={toolsSessionRef.current}
+            chapterId={steps[playback.index]?.key ?? ""}
+            chapterTitle={chapters[activeChapter]?.title}
+            disabled={slideActive}
+            onInteract={pause}
+            onDraftChange={onDraftChange}
+          />
+        </div>
+      )}
 
       <div
         data-story-ui

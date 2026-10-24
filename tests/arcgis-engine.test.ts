@@ -555,6 +555,23 @@ describe("ArcgisEngine camera moves", () => {
     assert.equal(goTo.length, 1, "pause prevents the pending rotation");
     engine.destroy();
   });
+  it("continues after camera failures but ignores aborted, stopped, and superseded failures", async (t) => {
+    t.mock.method(console, "warn", () => {});
+    for (const scenario of ["failed", "aborted", "interrupted", "stopped", "superseded"] as const) {
+      const { engine, rawView } = makeEngine();
+      const error = new Error("Camera move failed");
+      if (scenario === "aborted") error.name = "AbortError";
+      if (scenario === "interrupted") error.name = "view:goto-interrupted";
+      rawView.goTo = () => Promise.reject(error);
+      let arrived = 0;
+      engine.applyStoryChapterCamera(chapterAt([1, 2], 5), "flyTo", true, () => arrived++);
+      if (scenario === "stopped") engine.stopStoryCamera();
+      if (scenario === "superseded") engine.applyStoryChapterCamera(chapterAt([3, 4], 6), "flyTo");
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      assert.equal(arrived, scenario === "failed" ? 1 : 0, scenario);
+      engine.destroy();
+    }
+  });
   it("cancels a paused or superseded chapter's pending arrival and rotation", async () => {
     const { engine, goTo } = makeEngine();
     let arrived = 0;

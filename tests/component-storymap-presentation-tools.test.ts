@@ -48,6 +48,46 @@ function fakeEngine() {
 }
 
 describe("storymap presentation tools", () => {
+  it("retains saved chapters across navigation and portal remounts until annotations change", () => {
+    const fake = fakeEngine();
+    const session = createPresentationToolsSession();
+    const props = { engine: fake.engine, session, onInteract: () => {} };
+    const view = render(createElement(StoryMapPresentationTools, { ...props, chapterId: "a" }));
+    const initialLayers = useAppStore.getState().layers.length;
+    const save = () =>
+      screen.getByRole("button", { name: "Save as result layer" }) as HTMLButtonElement;
+    const place = (coordinate: [number, number]) => {
+      fireEvent.click(screen.getByRole("button", { name: "Place a marker" }));
+      fake.click(coordinate);
+    };
+    fireEvent.click(screen.getByRole("button", { name: "Presentation tools" }));
+    place([117, 39]);
+    fireEvent.click(save());
+    assert.equal(save().disabled, true);
+    view.rerender(createElement(StoryMapPresentationTools, { ...props, chapterId: "b" }));
+    place([118, 40]);
+    fireEvent.click(save());
+    view.rerender(createElement(StoryMapPresentationTools, { ...props, chapterId: "a" }));
+    assert.equal(save().disabled, true);
+    fireEvent.click(save());
+    assert.equal(useAppStore.getState().layers.length, initialLayers + 2);
+    view.unmount();
+    const remounted = render(
+      createElement(StoryMapPresentationTools, { ...props, chapterId: "a" }),
+    );
+    assert.equal(save().disabled, true);
+    place([119, 41]);
+    assert.equal(save().disabled, false);
+    fireEvent.click(save());
+    assert.equal(save().disabled, true);
+    fireEvent.click(screen.getByRole("button", { name: "Remove last annotation" }));
+    assert.equal(save().disabled, false);
+    fireEvent.click(save());
+    assert.equal(useAppStore.getState().layers.length, initialLayers + 4);
+    remounted.rerender(createElement(StoryMapPresentationTools, { ...props, chapterId: "b" }));
+    assert.equal(save().disabled, true);
+  });
+
   it("restores completed annotations and the unfinished draft after a renderer portal is replaced", () => {
     const first = fakeEngine();
     const second = fakeEngine();

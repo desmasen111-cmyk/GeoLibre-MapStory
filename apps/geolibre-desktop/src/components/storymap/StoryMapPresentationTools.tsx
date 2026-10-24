@@ -56,6 +56,7 @@ interface StoryMapPresentationToolsProps {
 /** Session-only state owned above the map portal; it is never project data. */
 export interface PresentationToolsSession {
   annotations: Record<string, PresentationAnnotation[]>;
+  savedAnnotations: Record<string, PresentationAnnotation[]>;
   tool: PresentationTool | null;
   draft: PresentationCoordinate[];
   label: string;
@@ -67,6 +68,7 @@ export interface PresentationToolsSession {
 export function createPresentationToolsSession(): PresentationToolsSession {
   return {
     annotations: {},
+    savedAnnotations: {},
     tool: null,
     draft: [],
     label: "",
@@ -120,7 +122,9 @@ export function StoryMapPresentationTools({
     chapterId: string;
     coordinate: PresentationCoordinate;
   } | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [savedAnnotations, setSavedAnnotations] = useState(
+    () => presentationSession.savedAnnotations,
+  );
   const [, invalidateProjection] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
@@ -128,25 +132,26 @@ export function StoryMapPresentationTools({
   draftCallbackRef.current = onDraftChange;
   const surface = engine.getRenderSurface();
   const chapterAnnotations = annotations[chapterId] ?? [];
+  const saved = chapterAnnotations.length > 0 && savedAnnotations[chapterId] === chapterAnnotations;
 
   // Commit before paint so a portal remount starts from the latest user input.
   // The caller keeps this same session object until the presentation ends.
   useLayoutEffect(() => {
     Object.assign(presentationSession, {
       annotations,
+      savedAnnotations,
       tool,
       draft,
       label,
       expanded,
     });
-  }, [presentationSession, annotations, tool, draft, label, expanded]);
+  }, [presentationSession, annotations, savedAnnotations, tool, draft, label, expanded]);
 
   // In-flight lookups must never move the camera after a chapter change/exit.
   useEffect(() => {
     setMatches([]);
     setSearchError(null);
     setSearching(false);
-    setSaved(false);
     return () => abortRef.current?.abort();
   }, [chapterId]);
 
@@ -184,7 +189,6 @@ export function StoryMapPresentationTools({
         annotation,
       ],
     }));
-    setSaved(false);
   }, []);
 
   const placeVertex = (coordinate: PresentationCoordinate) => {
@@ -511,8 +515,8 @@ export function StoryMapPresentationTools({
             )}
             {matches.length > 0 && (
               <ul className="max-h-40 overflow-y-auto rounded border text-xs">
-                {matches.map((match, index) => (
-                  <li key={index}>
+                {matches.map((match) => (
+                  <li key={`${match.lon},${match.lat}:${match.displayName}`}>
                     <button
                       type="button"
                       className="w-full px-2 py-1.5 text-start hover:bg-muted"
@@ -622,7 +626,10 @@ export function StoryMapPresentationTools({
                     }),
                     presentationAnnotationsCollection(chapterAnnotations),
                   );
-                  setSaved(true);
+                  setSavedAnnotations((current) => ({
+                    ...current,
+                    [chapterId]: chapterAnnotations,
+                  }));
                 }}
               >
                 <Save className="h-3.5 w-3.5" />
@@ -640,7 +647,6 @@ export function StoryMapPresentationTools({
                     ...current,
                     [chapterId]: (current[chapterId] ?? []).slice(0, -1),
                   }));
-                  setSaved(false);
                 }}
               >
                 <Undo2 className="h-3.5 w-3.5" />

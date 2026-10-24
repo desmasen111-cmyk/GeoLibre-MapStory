@@ -317,3 +317,31 @@ test("Escape respects an editable control and still exits back to the story edit
     page.getByRole("dialog").getByRole("heading", { name: "Story Map", exact: true }),
   ).toBeVisible();
 });
+
+test("chapter duration stays editable until blur and then normalizes", async ({
+  page,
+  baseURL,
+}) => {
+  await openPresentation(page, baseURL!);
+  await page.getByRole("button", { name: "Exit", exact: true }).click();
+  await page.getByRole("button", { name: "Project", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Story Map...", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: /1 City overview/ }).click();
+  const duration = dialog.getByRole("spinbutton", { name: "Stay duration (seconds)" });
+  await duration.fill("0");
+  await expect(duration).toHaveValue("0");
+  await duration.pressSequentially(".5");
+  await expect(duration).toHaveValue("0.5");
+  await duration.blur();
+  await expect(duration).toHaveValue("1");
+  await duration.fill("120.5");
+  await duration.blur();
+  await expect(duration).toHaveValue("120.5");
+  await duration.fill("4000");
+  await duration.blur();
+  await expect(duration).toHaveValue("3600");
+  await duration.fill("");
+  await duration.blur();
+  await expect(duration).toHaveValue("");
+});

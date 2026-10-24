@@ -77,6 +77,10 @@ export class StoryPresentationPlayback {
 
   pause(): void {
     if (this.disposed) return;
+    if (this.state.phase !== "playing" && this.state.phase !== "moving") {
+      this.cancel();
+      return;
+    }
     const remaining =
       this.state.phase === "playing"
         ? Math.max(0, Math.ceil((this.deadline - this.clock.now()) / 1000))
